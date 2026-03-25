@@ -106,7 +106,8 @@ SOLUTIONS:
                     logger.info("Loading processor...")
                     self.processor = AutoProcessor.from_pretrained(
                         self.model_name,
-                        trust_remote_code=True
+                        trust_remote_code=True,
+                        use_fast=False
                     )
 
                     # Load model - match working Gradio implementation exactly
