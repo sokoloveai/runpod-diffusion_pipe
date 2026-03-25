@@ -37,3 +37,11 @@ RUN grep -v -i "flash-attn\|flash-attention" /diffusion_pipe/requirements.txt > 
 COPY src/start_script.sh /start_script.sh
 RUN chmod +x /start_script.sh
 CMD ["/start_script.sh"]
+
+RUN python3 -c "\
+p='/workspace/diffusion_pipe_working_folder/Captioning/JoyCaption/joy_caption_batch.py';\
+t=open(p).read();\
+old='trust_remote_code=True\n                    )';\
+new='trust_remote_code=True,\n                        use_fast=False\n                    )';\
+open(p,'w').write(t.replace(old,new));\
+print('Patched')"
