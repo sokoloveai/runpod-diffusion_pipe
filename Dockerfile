@@ -1,5 +1,5 @@
 # Use CUDA base image
-FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS base
+FROM nvidia/cuda:13.0.0-cudnn-devel-ubuntu24.04 AS base
 
 # Consolidated environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -27,7 +27,9 @@ RUN pip install --no-cache-dir gdown jupyterlab jupyterlab-lsp \
 FROM base AS final
 
 # Clone the repository in the final stage
-RUN pip install torch torchvision torchaudio
+RUN pip install --no-cache-dir \
+    torch==2.10.0 torchvision==0.25.0 torchaudio==2.10.0 \
+    --index-url https://download.pytorch.org/whl/cu130
 RUN git clone --recurse-submodules https://github.com/tdrussell/diffusion-pipe /diffusion_pipe
 # Install requirements but exclude flash-attn to avoid build issues
 RUN grep -v -i "flash-attn\|flash-attention" /diffusion_pipe/requirements.txt > /tmp/requirements_no_flash.txt && \
