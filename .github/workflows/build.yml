@@ -2,20 +2,40 @@ name: Build and Push Docker Image
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: docker/login-action@v3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: docker/build-push-action@v5
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: sokoloveai/wan22-lora-trainer
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
+            type=sha
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: sokoloveai/wan22-lora-trainer:v1
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
