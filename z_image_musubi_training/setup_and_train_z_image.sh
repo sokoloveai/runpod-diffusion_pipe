@@ -44,8 +44,8 @@ try:
         print("\nCUDA is not available on this system.")
         print("This script requires CUDA to run.")
         print("\nSOLUTION:")
-        print("  Please deploy with CUDA 12.8 when selecting your GPU on RunPod")
-        print("  This template requires CUDA 12.8")
+        print("  Please deploy with CUDA 13.0 when selecting your GPU on RunPod")
+        print("  This template requires CUDA 13.0")
         print("\n" + "="*70)
         sys.exit(1)
 except RuntimeError as e:
@@ -62,8 +62,8 @@ except RuntimeError as e:
         print("  1. Use a newer GPU model (recommended):")
         print("     • H100 or H200 GPUs are recommended for best compatibility")
         print("  2. Ensure correct CUDA version:")
-        print("     • Filter for CUDA 12.8 when selecting your GPU on RunPod")
-        print("     • This template requires CUDA 12.8")
+        print("     • Filter for CUDA 13.0 when selecting your GPU on RunPod")
+        print("     • This template requires CUDA 13.0")
         print("\n" + "="*70)
         sys.exit(1)
     else:
@@ -181,7 +181,7 @@ if [ ! -f "$SETUP_MARKER" ] || [ "$FORCE_SETUP" = "1" ]; then
 
   # 3) Python deps
   pip install -e .
-  pip install torch torchvision torchaudio xformers --index-url https://download.pytorch.org/whl/cu128
+  pip install torch torchvision torchaudio xformers --index-url https://download.pytorch.org/whl/cu130
   pip install protobuf six huggingface_hub==0.34.0
   pip install hf_transfer hf_xet || true
   export HF_HUB_ENABLE_HF_TRANSFER=1 || true

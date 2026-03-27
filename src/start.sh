@@ -113,7 +113,7 @@ echo "================================================"
 # ============================================================
 status_msg "[1/4] Installing flash attention..."
 
-FLASH_ATTN_WHEEL_URL="https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.5.4/flash_attn-2.8.3+cu128torch2.9-cp312-cp312-linux_x86_64.whl"
+FLASH_ATTN_WHEEL_URL=""  # No prebuilt wheel for cu130; will build from source below
 WHEEL_INSTALLED=false
 
 if [ -n "$FLASH_ATTN_WHEEL_URL" ]; then
@@ -255,7 +255,7 @@ fi
 # ============================================================
 status_msg "[3/4] Fetching latest updates..."
 
-run_quiet "torch"          pip install torch torchvision torchaudio
+run_quiet "torch"          pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
 run_quiet "transformers"   pip install transformers -U
 run_quiet "huggingface"    pip install --upgrade "huggingface_hub[cli]"
 run_quiet "peft"           pip install --upgrade "peft>=0.17.0"
