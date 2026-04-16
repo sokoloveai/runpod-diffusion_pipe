@@ -109,70 +109,17 @@ echo "  GPU: $DETECTED_GPU"
 echo "================================================"
 
 # ============================================================
-# [1/4] Flash attention
+# [1/4] Verify flash attention
 # ============================================================
-status_msg "[1/4] Installing flash attention..."
+status_msg "[1/4] Checking flash attention..."
 
-FLASH_ATTN_WHEEL_URL=""  # No prebuilt wheel for cu130; will build from source below
-WHEEL_INSTALLED=false
-
-if [ -n "$FLASH_ATTN_WHEEL_URL" ]; then
-    cd /tmp
-    WHEEL_NAME=$(basename "$FLASH_ATTN_WHEEL_URL")
-
-    if wget -q -O "$WHEEL_NAME" "$FLASH_ATTN_WHEEL_URL" >> "$STARTUP_LOG" 2>&1; then
-        if pip install "$WHEEL_NAME" >> "$STARTUP_LOG" 2>&1; then
-            rm -f "$WHEEL_NAME"
-            WHEEL_INSTALLED=true
-            touch /tmp/flash_attn_wheel_success
-        else
-            rm -f "$WHEEL_NAME"
-        fi
-    fi
-fi
-
-# Fall back to building from source in background if wheel not installed
-if [ "$WHEEL_INSTALLED" = false ]; then
-    echo "       Building from source in background (this may take a few minutes)..."
-
-    CPU_CORES=$(nproc)
-    CPU_JOBS=$(( CPU_CORES - 2 ))
-    [ "$CPU_JOBS" -lt 4 ] && CPU_JOBS=4
-    AVAILABLE_RAM_GB=$(free -g | awk '/^Mem:/{print $7}')
-    RAM_JOBS=$(( AVAILABLE_RAM_GB / 3 ))
-    [ "$RAM_JOBS" -lt 4 ] && RAM_JOBS=4
-    if [ "$CPU_JOBS" -lt "$RAM_JOBS" ]; then
-        OPTIMAL_JOBS=$CPU_JOBS
-    else
-        OPTIMAL_JOBS=$RAM_JOBS
-    fi
-
-    (
-        set -e
-        DETECTED_GPU=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -n1 | xargs)
-        CUDA_ARCH=$(detect_cuda_arch)
-
-        pip install ninja packaging -q
-        if ! ninja --version > /dev/null 2>&1; then
-            pip uninstall -y ninja && pip install ninja
-        fi
-
-        cd /tmp
-        rm -rf flash-attention
-        git clone https://github.com/Dao-AILab/flash-attention.git
-        cd flash-attention
-
-        export FLASH_ATTN_CUDA_ARCHS="$CUDA_ARCH"
-        export MAX_JOBS=$OPTIMAL_JOBS
-        export NVCC_THREADS=4
-
-        python setup.py install
-
-        cd /tmp
-        rm -rf flash-attention
-    ) > "$NETWORK_VOLUME/logs/flash_attn_install.log" 2>&1 &
-    FLASH_ATTN_PID=$!
-    echo "$FLASH_ATTN_PID" > /tmp/flash_attn_pid
+if python -c "import flash_attn" 2>/dev/null; then
+    FA_VER=$(python -c "import flash_attn; print(flash_attn.__version__)" 2>/dev/null)
+    echo "       flash-attn $FA_VER already installed (from Docker image)."
+else
+    echo "       flash-attn not found, installing from prebuilt wheel..."
+    FLASH_ATTN_WHEEL_URL="https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.9.4/flash_attn-2.7.4%2Bcu130torch2.11-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl"
+    run_quiet "flash-attn" pip install "$FLASH_ATTN_WHEEL_URL"
 fi
 
 # ============================================================
@@ -255,7 +202,6 @@ fi
 # ============================================================
 status_msg "[3/4] Fetching latest updates..."
 
-run_quiet "torch"          pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
 run_quiet "transformers"   pip install transformers -U
 run_quiet "huggingface"    pip install --upgrade "huggingface_hub[cli]"
 run_quiet "peft"           pip install --upgrade "peft>=0.17.0"
