@@ -1,6 +1,6 @@
 # HearmemanAI LoRA Trainer - Quick Start Guide
 
-Deploy here: https://get.runpod.io/diffusion-pipe-template
+Deploy here: https://console.runpod.io/deploy?template=muddl44h5v
 
 ## Getting Started
 
