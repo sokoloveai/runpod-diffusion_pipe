@@ -26,9 +26,9 @@ RUN pip install --no-cache-dir gdown jupyterlab jupyterlab-lsp \
 # Create the final image
 FROM base AS final
 
-# PyTorch (latest for cu130)
+# PyTorch 2.11 for cu130 (pinned: the prebuilt flash-attn wheel below is built against torch 2.11)
 RUN pip install --no-cache-dir \
-    torch torchvision torchaudio \
+    torch==2.11.0 torchvision==0.26.0 torchaudio==2.11.0 \
     --index-url https://download.pytorch.org/whl/cu130
 
 # Flash-attn from prebuilt wheel (cu130 + torch2.11 + Python 3.12)
@@ -38,6 +38,9 @@ RUN pip install --no-cache-dir \
 # Clone diffusion-pipe and install ALL requirements (flash-attn already installed above)
 RUN git clone --recurse-submodules https://github.com/tdrussell/diffusion-pipe /diffusion_pipe
 RUN pip install --no-cache-dir -r /diffusion_pipe/requirements.txt
+
+# Fail the build if requirements pulled in a torch the flash-attn wheel was not built for
+RUN python -c "import torch; assert torch.__version__.startswith('2.11.'), torch.__version__"
 
 COPY src/start_script.sh /start_script.sh
 RUN chmod +x /start_script.sh

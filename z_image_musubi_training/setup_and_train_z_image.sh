@@ -182,7 +182,8 @@ if [ ! -f "$SETUP_MARKER" ] || [ "$FORCE_SETUP" = "1" ]; then
   # 3) Python deps
   pip install -e .
   pip install torch torchvision torchaudio xformers --index-url https://download.pytorch.org/whl/cu130
-  pip install protobuf six huggingface_hub==0.34.0
+  # huggingface_hub comes from musubi-tuner pins; forcing 0.x breaks transformers 5.x (no is_offline_mode)
+  pip install protobuf six
   pip install hf_transfer hf_xet || true
   export HF_HUB_ENABLE_HF_TRANSFER=1 || true
 
