@@ -218,6 +218,7 @@ fi
 status_msg "[4/4] Starting JupyterLab..."
 
 # RunPod injects JUPYTER_PASSWORD when Jupyter is enabled for the pod; use it as the login token.
+# The console's Connect -> Jupyter Lab link appends ?token=$JUPYTER_PASSWORD, so login is automatic.
 # Without it JupyterLab stays open, as before.
 if [ -z "${JUPYTER_PASSWORD:-}" ]; then
     echo "       WARNING: JUPYTER_PASSWORD is not set, JupyterLab runs without a password."
@@ -236,7 +237,7 @@ echo "================================================"
 echo ""
 echo "  Template ready!"
 echo "  Open JupyterLab from the RunPod web interface."
-echo "  Password: JUPYTER_PASSWORD from the pod's environment variables."
+echo "  RunPod's Connect -> Jupyter Lab link logs you in automatically."
 echo ""
 echo "================================================"
 echo ""
